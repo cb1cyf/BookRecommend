@@ -12,7 +12,7 @@ else
     # NumPy is required for PySpark ML
     echo '[INFO] Installing NumPy on Spark Master...'
     docker exec master apt-get update
-    docker exec master apt-get upgrade -y
+    #docker exec master apt-get upgrade -y
     docker exec master apt-get install gcc -y
     docker exec master apt-get install python3-dev -y
     docker exec master pip install numpy
