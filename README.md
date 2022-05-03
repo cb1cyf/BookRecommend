@@ -2,9 +2,9 @@
 Project of Big Data Course
 ## Start Service
 ```bash
-$ bash start.sh
+bash start.sh
 ```
 ## Stop Service
 ```bash
-$ docker-compose stop
+docker-compose stop
 ```
