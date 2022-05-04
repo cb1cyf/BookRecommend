@@ -24,7 +24,7 @@ with open(path, 'a', encoding='ISO-8859-1') as f:
         title = data1[1]
         author = data1[2]
         url = data2[-2]
-        sql = f"insert into book values ({id}, {isbn}, '{title}', '{author}', '{url}')\n"
+        sql = f"insert into book values ({id}, {isbn}, '{title}', '{author}', '{url}');\n"
         f.write(sql)
         #f.flush()
         #print(sql)
