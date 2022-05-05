@@ -28,14 +28,12 @@ else
 
     echo '[INFO] Submitting Rating CSV File to HDFS...'
     cp ./CSV/Ratings.csv ./input_files/
-    cp ./CSV/UserRatings.csv ./input_files/
     docker exec namenode hdfs dfs -mkdir /input
     docker exec namenode hdfs dfs -put /input_files/Ratings.csv /input
-    docker exec namenode hdfs dfs -put /input_files/UserRatings.csv /input
     echo '[INFO] File Submitted'
 
     echo '[INFO] Copying Code & Driver to Spark Master...'
-    cp ./code/ALS.py ./submit/
+    cp ./code/main.py ./submit/
     cp ./mysql-connector-java-5.1.40.tar.gz ./submit/
     docker exec master tar -zxf /usr/submit/mysql-connector-java-5.1.40.tar.gz -C /usr/spark-2.3.0/jars/
     
