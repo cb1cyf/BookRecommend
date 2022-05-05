@@ -9,7 +9,7 @@ else
     docker-compose up -d
     echo '[INFO] Containers Started'
 
-    # NumPy is required for PySpark ML
+    # NumPy is required for PySpark ML; PyMySQL is used to execute delete clause
     echo '[INFO] Installing NumPy on Spark Master...'
     docker exec master apt-get update
     # Optional:
@@ -17,6 +17,7 @@ else
     docker exec master apt-get install gcc -y
     docker exec master apt-get install python3-dev -y
     docker exec master pip install numpy
+    docker exec master pip install PyMySQL==0.9.3
     echo '[INFO] NumPy Installed'
 
     echo '[INFO] Loading SQL Data into MySQL...'
@@ -34,6 +35,7 @@ else
     echo '[INFO] Copying Code & Driver to Spark Master...'
     cp ./code/ALS.py ./submit/
     cp ./mysql-connector-java-5.1.40.tar.gz ./submit/
+    docker exec master tar -zxf /usr/submit/mysql-connector-java-5.1.40.tar.gz -C /usr/spark-2.3.0/jars/
 
     echo '[INFO] Done'
 fi
