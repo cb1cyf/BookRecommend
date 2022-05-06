@@ -30,7 +30,6 @@ else
     cp ./CSV/Ratings.csv ./input_files/
     docker exec namenode hdfs dfs -mkdir /input
     docker exec namenode hdfs dfs -put /input_files/Ratings.csv /input
-    docker exec namenode hdfs dfs -mkdir /input/UserRatings/
     echo '[INFO] File Submitted'
 
     echo '[INFO] Copying Code & Driver to Spark Master...'
