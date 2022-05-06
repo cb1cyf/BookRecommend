@@ -161,6 +161,42 @@ def ReadRecommend(userId):
 """
 Score, Recommend
 """
+def line2row(line):
+    line = line.split(';')
+    row = {}
+    row['userId'] = int(line[0].strip('"'))
+    row['bookId'] = int(line[1].strip('"'))
+    row['rating'] = float(line[2].strip('"'))
+    return row
+
+# random select 10 books which have not been scored by userId
+def Book(userId):
+    spark = SparkSession.builder.master('spark://master:7077').appName('Book').getOrCreate()
+    sc = spark.sparkContext
+    UserRatings = sc.textFile('hdfs://namenode:8020/input/UserRatings').map(lambda line: Row(**line2row(line))).toDF()
+    UserRatings.createOrReplaceTempView('UserRatings')
+    sql = 'select bookId from UserRatings where userId={}'.format(userId)
+    userBook = spark.sql(sql)
+    prop = {
+        'user': 'root',
+        'password': '12345678',
+        'driver': 'com.mysql.jdbc.Driver',
+        'useSSL': 'false'
+    }
+    bookDF = spark.read.jdbc('jdbc:mysql://mysql:3306/recommend', 'book', properties=prop)
+    bookIdDF = bookDF.select('bookId').subtract(userBook)
+    frac = 15.0 / bookIdDF.count()
+    candidate = bookIdDF.sample(frac).take(10)
+    bookDF.createOrReplaceTempView('bookDF')
+    bookIds = [row['bookId'] for row in candidate]
+    bookRes = bookDF[bookDF.bookId.isin(bookIds)].collect()
+    res = []
+    for row in bookRes:
+        res.append([row['bookId'], row['ISBN'], row['title'], row['author'], row['url']])
+    print('[INFO] {} book to be scored for userId={}'.format(len(res), userId))
+    spark.stop()
+    return res
+
 # store user score in CSV
 def Score(userId, scoreList):
     # scoreList: [[bookId, score]]; type: str
@@ -178,14 +214,6 @@ def Score(userId, scoreList):
     rowDF.write.csv('hdfs://namenode:8020/input/UserRatings', mode='append', sep=';')
     print('[INFO] Store {} score for userId={}'.format(len(scoreList), userId))
     spark.stop()
-
-def line2row(line):
-    line = line.split(';')
-    row = {}
-    row['userId'] = int(line[0].strip('"'))
-    row['bookId'] = int(line[1].strip('"'))
-    row['rating'] = float(line[2].strip('"'))
-    return row
 
 # recommend with ALS; whether training is decided by flag (train after new score)
 def Recommend(userId, flag):
@@ -266,6 +294,9 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'ReadRecommend':
         assert len(sys.argv) == 3
         recommendResult = ReadRecommend(sys.argv[2])
+    elif sys.argv[1] == 'Book':
+        assert len(sys.argv) == 3
+        bookList = Book(sys.argv[2])
     elif sys.argv[1] == 'Score':
         assert len(sys.argv) == 4
         Score(sys.argv[2], sys.argv[3])
