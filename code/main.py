@@ -1,7 +1,9 @@
 from pyspark.sql import SparkSession, Row
+from pyspark.sql.functions import lit
 from pyspark.sql.types import *
-from pyspark.ml.recommendation import ALS
+from pyspark.ml.recommendation import ALS, ALSModel
 from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 import sys
 import pymysql
 
@@ -122,6 +124,18 @@ def ReadRecommend(userId):
     recommendDF = spark.read.jdbc('jdbc:mysql://mysql:3306/recommend', 'recommend', properties=prop)
     recommendDF.createOrReplaceTempView('recommend')
     sql = 'select bookId, rating from recommend where userId={}'.format(userId)
+    sqlRes = spark.sql(sql)
+    if not sqlRes.count():
+        print('[WARN] None Recommendation')
+        spark.stop()
+        return None
+    bookDF = spark.read.jdbc('jdbc:mysql://mysql:3306/recommend', 'book', properties=prop)
+    resDF = sqlRes.join(bookDF, 'bookId', 'inner')
+    res = []
+    def f(row):
+        res.append(tuple(row['bookId'], row['ISBN'], row['title'], row['author'], row['url'], row['rating']))
+    resDF.foreach(f)
+    """
     sqlRes = spark.sql(sql).collect()
     if not len(sqlRes):
         print('[WARN] None Recommendation')
@@ -142,6 +156,7 @@ def ReadRecommend(userId):
         author = bookRes[0]['author']
         url = bookRes[0]['url']
         res.append(tuple(bookId, isbn, title, author, url, rating))
+    """
     print('[INFO] Read {} recommendation for userId={}'.format(len(res), userId))
     spark.stop()
     return res
@@ -175,14 +190,43 @@ def line2row(line):
     return row
 
 # recommend with ALS; whether training is decided by flag (train after new score)
-def recommend(userId, flag):
+def Recommend(userId, flag):
     spark = SparkSession.builder.master('spark://master:7077').appName('ALS').getOrCreate()
     sc = spark.sparkContext
-    Ratings = sc.textFile('hdfs://namenode:8020/input/Ratings.csv').zipWithIndex().filter(lambda x: x[1]>0).map(lambda line: Row(**line2row(line[0]))).toDF()
     UserRatings = sc.textFile('hdfs://namenode:8020/input/UserRatings').map(lambda line: Row(**line2row(line))).toDF()
-    Ratings = Ratings.union(UserRatings)
-    train, test = Ratings.randomSplit([0.8, 0.2])
-    pass
+    if flag:
+        Ratings = sc.textFile('hdfs://namenode:8020/input/Ratings.csv').zipWithIndex().filter(lambda x: x[1]>0).map(lambda line: Row(**line2row(line[0]))).toDF()
+        dataset = Ratings.union(UserRatings)
+        als = ALS(userCol='userId', itemCol='bookId', ratingCol='rating')
+        paramGrid = ParamGridBuilder().addGrid(als.rank, list(range(10, 21, 2))).addGrid(als.maxIter, [10, 20, 30]).addGrid(als.regParam, list(range(0.1, 1.1, 0.1))).build()
+        evaluator = RegressionEvaluator('prediction', 'rating', 'rmse')
+        cv = CrossValidator(als, paramGrid, evaluator)
+        cvALS = cv.fit(dataset)
+        bestALS = cvALS.bestModel
+        bestALS.write().overwrite().save('/usr/model')
+    else:
+        cvALS = ALSModel.load('/usr/model')
+    UserRatings.createOrReplaceTempView('UserRatings')
+    sql = 'select bookId from UserRatings where userId={}'.format(userId)
+    userBook = spark.sql(sql)
+    prop = {
+        'user': 'root',
+        'password': '12345678',
+        'driver': 'com.mysql.jdbc.Driver',
+        'useSSL': 'false'
+    }
+    bookDF = spark.read.jdbc('jdbc:mysql://mysql:3306/recommend', 'book', properties=prop)
+    candidate = bookDF.filter(not bookDF.bookId.isin(userBook.bookId)).bookId
+    candidate = candidate.withColumn('userId', lit(userId)).withColumn('rating', lit(0.0))
+    prediction = cvALS.transform(candidate).select('userId', 'bookId', 'prediction')
+    resDF = prediction.sort('prediction', ascending=False).take(10)
+    res = []
+    def f(row):
+        res.append(tuple(row['bookId'], row['prediction']))
+    resDF.foreach(f)
+    print('[INFO] 10 recommendation by ALS for userId={}'.format(userId))
+    spark.stop()
+    return res
 
 if __name__ == '__main__':
     assert len(sys.argv) >= 2
@@ -201,3 +245,6 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'Score':
         assert len(sys.argv) == 4
         Score(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == 'Recommend':
+        assert len(sys.argv) == 4
+        res = Recommend(sys.argv[2], sys.argv[3])
