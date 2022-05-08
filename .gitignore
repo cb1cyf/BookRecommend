@@ -1,6 +1,14 @@
 .DS_Store
 .idea
 
+### files after start up
+input_files
+hadoop
+conf
+jars
+submit
+mysql
+
 ### Java
 # Compiled class file
 *.class

@@ -98,11 +98,13 @@ services:
       - 7005
       - 7077
       - 6066
+      - 8888
     ports:
       - 4040:4040
       - 6066:6066
       - 7077:7077
       - 8080:8080
+      - 8888:8888
     volumes:
       - ./conf/master:/conf
       - ./data/master:/tmp/data
@@ -205,16 +207,16 @@ services:
       - MYSQL_ROOT_PASSWORD=12345678
       - MYSQL_DATABASE=recommend
   
-  tomcat:
-    image: tomcat:8
-    platform: linux/x86_64
-    container_name: tomcat
-    volumes:
-      - ./tomcat/webapps:/usr/local/tomcat/webapps
-      # no more location need to be mounted for now
-      # TODO: other mounts
-      # issue: https://github.com/docker-library/tomcat/issues/96
-    ports:
-      - 8888:8080
-    environment:
-      - TZ=Asia/Shanghai
+  # tomcat:
+  #   image: tomcat:8
+  #   platform: linux/x86_64
+  #   container_name: tomcat
+  #   volumes:
+  #     - ./tomcat/webapps:/usr/local/tomcat/webapps
+  #     # no more location need to be mounted for now
+  #     # TODO: other mounts
+  #     # issue: https://github.com/docker-library/tomcat/issues/96
+  #   ports:
+  #     - 8888:8080
+  #   environment:
+  #     - TZ=Asia/Shanghai
