@@ -6,15 +6,17 @@ import com.rw.util.SqlSessionFactoryUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.util.List;
+
 public class RecService {
     SqlSessionFactory factory = SqlSessionFactoryUtils.getSqlSessionFactory();
 
-    public RecResult selectByUserId(int userId) {
+    public List<RecResult> selectByUserId(int userId) {
         SqlSession sqlSession = factory.openSession();
         RecMapper mapper = sqlSession.getMapper(RecMapper.class);
 
-        RecResult recResult = mapper.selectByUserId(userId);
+        List<RecResult> recResults = mapper.selectByUserId(userId);
         sqlSession.close();
-        return recResult;
+        return recResults;
     }
 }

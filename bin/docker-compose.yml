@@ -110,6 +110,7 @@ services:
       - ./data/master:/tmp/data
       - ./jars:/root/jars
       - ./submit:/usr/submit
+      - ./webapps:/usr/webapps
 
   worker1:
     image: gettyimages/spark:2.3.0-hadoop-2.8

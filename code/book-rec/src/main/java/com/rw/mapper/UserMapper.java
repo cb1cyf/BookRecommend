@@ -18,7 +18,7 @@ public interface UserMapper {
      * @param userName
      * @return User
      */
-    User selectByName(String userName);
+    User selectByName(@Param("name") String userName);
 
     /**
      * 根据用户名和密码查询用户

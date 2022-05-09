@@ -1,7 +1,8 @@
 package com.rw.web;
 
-import com.rw.pojo.User;
-import com.rw.service.UserService;
+import com.alibaba.fastjson.JSON;
+import com.rw.pojo.Book;
+import com.rw.service.BookService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,18 +10,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
-@WebServlet("/checkUserServlet")
-public class CheckUserServlet extends HttpServlet {
-    UserService service = new UserService();
+@WebServlet("/selectRandomTenBooksServlet")
+public class SelectRandomTenBooksServlet extends HttpServlet {
+    BookService bookService = new BookService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String username = request.getParameter("name");
-        User selectUser = service.selectByName(username);
-        if (selectUser != null) {
-            response.getWriter().write("exit");
-        }
+        List<Book> books = bookService.selectRandomTenBooks();
+        String jsonString = JSON.toJSONString(books);
+
+        response.setContentType("text/json;charset=utf-8");
+        response.getWriter().write(jsonString);
     }
 
     @Override

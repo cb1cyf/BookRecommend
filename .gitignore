@@ -2,6 +2,7 @@
 .idea
 bookData.sql
 
+
 ### files after start up
 input_files
 hadoop
@@ -9,6 +10,7 @@ conf
 jars
 submit
 mysql
+webapps
 
 ### Java
 # Compiled class file

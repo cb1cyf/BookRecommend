@@ -12,7 +12,7 @@
         select * from user;
     </select>
     <select id="selectByName" resultType="user">
-        select * from user where userName=#{userName};
+        select * from user where userName=#{name};
     </select>
     <select id="select" resultType="user">
         select *

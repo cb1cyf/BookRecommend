@@ -6,10 +6,17 @@
 
     <select id="selectById" resultType="book">
         select *
-        from book where bookId=#{bookId};
+        from book
+        where bookId = #{bookId};
     </select>
     <select id="selectByISBN" resultType="book">
         select *
-        from book where ISBN=#{ISBN};
+        from book
+        where ISBN = #{ISBN};
+    </select>
+    <select id="selectRandomTenBooks" resultType="book">
+        SELECT *
+        FROM book
+        ORDER BY RAND() LIMIT 10;
     </select>
 </mapper>

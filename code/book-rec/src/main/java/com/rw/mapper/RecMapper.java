@@ -2,6 +2,8 @@ package com.rw.mapper;
 
 import com.rw.pojo.RecResult;
 
+import java.util.List;
+
 public interface RecMapper {
-    RecResult selectByUserId(int userId);
+    List<RecResult> selectByUserId(int userId);
 }

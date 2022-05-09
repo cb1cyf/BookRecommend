@@ -10,9 +10,10 @@
 a, img {
     border: 0;
 }
-
+html {
+    background: cadetblue;
+}
 body {
-    background-image: url("../imgs/reg_bg_min.jpg") ;
     text-align: center;
 }
 
@@ -49,7 +50,7 @@ td, th {
     border: 1px solid #aaa;
     width: 424px;
     margin-top: 150px;
-    margin-left:1050px;
+    margin-left:500px;
     padding: 30px 0 20px 0px;
     font-size: 16px;
     box-shadow: inset 0px 0px 10px rgba(255, 255, 255, 0.5), 0px 0px 15px rgba(75, 75, 75, 0.3);
@@ -126,7 +127,8 @@ input[type="button"]:active, input[type="submit"]:active {
     background-color: #5a88c8;
 }
 .err_msg{
-    color: red;
+    text-align: center;
+    color:red;
     padding-right: 170px;
 }
 #password_err,#tel_err{

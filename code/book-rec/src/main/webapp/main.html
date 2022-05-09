@@ -6,8 +6,69 @@
 </head>
 <body>
 <div id="app">
+    <div id="sys_title">
+        <h1>{{userName}}, 欢迎使用分布式书籍推荐系统</h1>
+    </div>
+    <HR style="FILTER: alpha(opacity=0,finishopacity=100,style=1)" width="100%" color=#987cb9 SIZE=3>
+    <!--
+    page status:
+    -1 : loading
+    0: error
+    1: new user, need to do score
+    2: old user, just show the recommendation result
+    -->
 
+    <div id="new_user_page" v-if="pageStatus==1">
 
+    </div>
+    <div id="old_user_page" v-else-if="pageStatus==2">
+        <!---->
+        <h1> test for page display!</h1>
+        <input type="button" name="re_score" value="对书籍进行打分" v-on:click="score()">
+        <form id="score" action="/book-rec/scoreServlet" method="post">
+            <input type="submit" class="button" value="提交评分">
+            <table id="score_table" border="1" cellpadding="0" width="100%" v-show="need_score==1">
+                <tr>
+                    <th>index</th>
+                    <th>cover</th>
+                    <th>title</th>
+                    <th>author</th>
+                    <th>Score</th>
+                </tr>
+                <tr v-for="(book,i) in score_book_list" align="center">
+                    <td>{{i + 1}}</td>
+                    <td><img :src="book.url"></td>
+                    <td>{{book.title}}</td>
+                    <td>{{book.author}}</td>
+                    <td><input type="text" :name="book.bookId"></td>
+                </tr>
+            </table>
+            <input  hidden type="text" name="name" :value="userName">
+        </form>
+
+        <input type="button" name="re_score" value="展示推荐结果" v-on:click="show_res()">
+        <table id="rec_books_table" border="1" cellpadding="0" width="100%" v-show="is_display==1">
+            <tr>
+                <th>cover</th>
+                <th>index</th>
+                <th>title</th>
+                <th>author</th>
+            </tr>
+            <tr v-for="(book,i) in rec_result" align="center">
+                <td><img :src="book.url"></td>
+                <td>{{i + 1}}</td>
+                <td>{{book.title}}</td>
+                <td>{{book.author}}</td>
+            </tr>
+        </table>
+
+    </div>
+    <div id="loading_page" v-else-if="pageStatus==-1">
+        <h2>转交给Spark集群计算中，请稍后...</h2>
+    </div>
+    <div id="error_page" v-else>
+        <h1>Error: no valid user!</h1>
+    </div>
 
 </div>
 
@@ -16,6 +77,64 @@
 <script src="js/vue.js"></script>
 <script src="js/axios-0.18.0.js"></script>
 <script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                userName: "",
+                pageStatus: 1,
+                rec_result: [],
+                is_display: 0,
+                need_score: 0,
+                score_book_list:[]
+            }
+        },
+        mounted() {
+            var _this = this;
+            let name = localStorage.getItem('userName');
+            if (name != null) {
+                _this.userName = name;
+                axios({
+                    method: "get",
+                    /*FLAG*/
+                    url: "http://localhost:8080/book-rec/checkIsHasRecResServlet?username=" + _this.userName
+                }).then(function (resp) {
+                    if (resp.data == "yes") {
+                        _this.pageStatus = 2;
+                        axios({
+                            method: "get",
+                            /*FLAG */
+                            url: "http://localhost:8080/book-rec/selectRecResByIdServlet?username=" + _this.userName
+                        }).then(function (resp) {
+                            _this.rec_result = resp.data;
+                        });
+                    } else {
+                        _this.pageStatus = 1;
+                    }
+                })
+            } else {
+                _this.pageStatus = 0;
+            }
+        },
+        methods: {
+            show_res() {
+                var _this = this;
+                _this.is_display ^= 1;
+            },
+            score() {
+                var _this = this;
+                _this.need_score ^= 1;
+                axios({
+                    method: "get",
+                    /*FLAG */
+                    url: "http://localhost:8080/book-rec/selectRandomTenBooksServlet"
+                }).then(function (resp) {
+                    _this.score_book_list = resp.data;
+                });
+
+            }
+        }
+    })
 
 </script>
 </body>

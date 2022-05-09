@@ -6,6 +6,8 @@ import com.rw.util.SqlSessionFactoryUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.util.List;
+
 public class BookService {
     SqlSessionFactory factory = SqlSessionFactoryUtils.getSqlSessionFactory();
 
@@ -25,5 +27,13 @@ public class BookService {
         Book book = mapper.selectByISBN(ISBN);
         sqlSession.close();
         return book;
+    }
+    public List<Book> selectRandomTenBooks() {
+        SqlSession sqlSession = factory.openSession();
+        BookMapper mapper = sqlSession.getMapper(BookMapper.class);
+
+        List<Book> books = mapper.selectRandomTenBooks();
+        sqlSession.close();
+        return books;
     }
 }

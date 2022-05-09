@@ -19,13 +19,26 @@ public class UserService {
         return user;
     }
 
-    public User select(String username, String password) {
+    public User login(String username, String password) {
         SqlSession sqlSession = factory.openSession();
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
 
         User user = mapper.select(username, password);
         sqlSession.close();
         return user;
+    }
+
+    public boolean register(User user) {
+        SqlSession sqlSession = factory.openSession();
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+
+        User userRes = mapper.selectByName(user.getUserName());
+        if (userRes == null) {
+            mapper.add(user.getUserName(), user.getPassword());
+            sqlSession.commit();
+        }
+        sqlSession.close();
+        return userRes == null;
     }
 
     public void add(String username, String password) {

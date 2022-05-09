@@ -37,16 +37,20 @@ docker exec master pip install PyMySQL==0.9.3
 echo '[INFO] NumPy & PyMySQL Installed'
 
 echo '[INFO] Install tomcat@8 on Spark Master...'
-docker exec master curl -k https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.tar.gz > /usr/tomcat.tar.gz
-docker exec master chmod a+x /usr/tomcat.tar.gz
-docker exec master tar -xvf /usr/tomcat.tar.gz
-docker exec master rm -f /usr/tomcat.tar.gz
-docker exec master mv /usr/apache-tomcat-8.5.78/ /usr/tomcat
+docker exec master curl -O -k https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.tar.gz
+docker exec master chmod a+x ./apache-tomcat-8.5.78.tar.gz
+docker exec master tar -xzvf ./apache-tomcat-8.5.78.tar.gz
+docker exec master rm -f ./apache-tomcat-8.5.78.tar.gz
+docker exec master cp -r ./apache-tomcat-8.5.78 /usr/
+docker exec master rm -rf ./apache-tomcat-8.5.78
 docker exec master sed -i 's/Connector port="8080"/Connector port="8888"/' /usr/apache-tomcat-8.5.78/conf/server.xml
-docker exec master rm -rf /usr/tomcat/webapps/
-docker exec master mv /usr/webapps /usr/tomcat/webapps
+##
+###
+####!!!
+####### 这里是存放的主程序jar包
+#docker exec master cp /usr/webapps/book-rec.jar /usr/apache-tomcat-8.5.78/webapps/
 echo '[INFO] Start-up Tomcat'
-docker exec master /usr/bin/tomcat/bin/startup.sh
+docker exec master /usr/apache-tomcat-8.5.78/bin/startup.sh
 
 echo '[INFO] Loading SQL Data into MySQL...'
 if [ ! -f ./bookData.sql ]; then
