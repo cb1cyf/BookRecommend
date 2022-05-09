@@ -21,9 +21,21 @@ body {
     justify-content: center;
     height: 100%;
 }
+#app{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#form{
+    align-content: center;
+    align-items: center;
+}
 
 #loginDiv {
-    width: 37%;
+    text-align: center;
+    width: 30%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -91,6 +103,7 @@ p {
 
 #sys_title {
     color: #f0edf3;
+    text-align: center;
     font-weight: bold;
     font-size: 20px;
     margin-bottom: 12px;

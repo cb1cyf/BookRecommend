@@ -8,24 +8,58 @@
 </head>
 
 <body>
-<div id="sys_title">
-    <h1>书籍推荐系统</h1>
+<div id="app">
+    <div id="sys_title">
+        <h1>书籍推荐系统</h1>
+    </div>
+    <div id="loginDiv" style="height: 350px">
+        <form action="/book-rec/loginServlet" method="post" id="form">
+            <h1 id="loginMsg">LOGIN IN</h1>
+            <div id="errorMsg" v-show="is_false==1">用户名或密码不正确</div>
+            <p>Username:<input id="username" name="username" type="text" v-model="username"></p>
+            <p>Password:<input id="password" name="password" type="password" v-on:blur="check_user_is_exit()"
+                               v-model="userInfo.password"></p>
+            <div id="subDiv">
+                <input type="submit" class="button" value="login">
+                <input type="reset" class="button" value="reset">&nbsp;
+                <a href="register.html" id="reg_btn">Go to register</a>
+            </div>
+        </form>
+    </div>
 </div>
-<div id="loginDiv" style="height: 350px">
-    <form action="" id="form">
-        <h1 id="loginMsg">LOGIN IN</h1>
-        <div id="errorMsg" hidden>用户名或密码不正确</div>
-        <p>Username:<input id="username" name="username" type="text"></p>
 
-        <p>Password:<input id="password" name="password" type="password"></p>
-        <p>Remember:<input id="remember" name="remember" type="checkbox"></p>
-        <div id="subDiv">
-            <input type="submit" class="button" value="login">
-            <input type="reset" class="button" value="reset">&nbsp;
-            <a href="register.html" id="reg_btn">Go to register</a>
-        </div>
-    </form>
-</div>
+<!--var dataSession=sessionStorage.getItem(name);//获取指定键名数据-->
 
+<!--scripts-->
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                userInfo: {},
+                is_false: 0,
+                username: ""
+            }
+        },
+        methods: {
+            check_user_is_exit() {
+                var _this = this;
+                axios({
+                    method: "post",
+                    /*FLAG 注意修改为8888*/
+                    url: "http://localhost:8080/book-rec/checkUserServlet?name="+_this.username,
+                    // data: _this.username
+                }).then(function (resp) {
+                    if (resp.data != "exit") {
+                        _this.is_false = 1;
+                    }
+                })
+            }
+        }
+    });
+
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+bookData.sql
 
 ### files after start up
 input_files
