@@ -1,6 +1,7 @@
 package com.rw.web;
 
 import com.rw.pojo.User;
+import com.rw.service.SparkService;
 import com.rw.service.UserService;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import java.util.Map;
 @WebServlet("/scoreServlet")
 public class ScoreServlet extends HttpServlet {
     UserService userService = new UserService();
+    SparkService sparkService = new SparkService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -21,8 +23,6 @@ public class ScoreServlet extends HttpServlet {
         User user = userService.selectByName(username);
 
         StringBuilder sb = new StringBuilder();
-        // 拼接字符串
-        // [[bookId0, score0], [bookId1, score1]...]
         sb.append("[");
         Map<String, String[]> map = request.getParameterMap();
         for (Map.Entry<String, String[]> entry : map.entrySet()) {
@@ -40,10 +40,20 @@ public class ScoreServlet extends HttpServlet {
         String scoreList = sb.toString();
         int userId = user.getUserId();
 
-       /* System.out.println(sb);
-        response.getWriter().write("test success");*/
-        // 将打分放入 namenode userRatings.csv
-        // 调用main.python
+        // 将打分放入 userRatings.csv
+        // 调用main.py
+        try {
+            boolean status = sparkService.storeUserScoreInCSV(userId, scoreList);
+            if(status) {
+                response.getWriter().write("success");
+                request.getRequestDispatcher("/submitServlet?userId="+userId).forward(request, response);
+            } else {
+                response.getWriter().write("fail");
+                request.getRequestDispatcher("/error.html").forward(request, response);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

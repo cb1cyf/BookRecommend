@@ -9,17 +9,9 @@ fi
 
 # Path variables
 ROOT_PATH="../"
-MYSQL_INIT_PATH="./mysql/init"
-# check folders
-if [ ! -d "./mysql" ]; then
-    mkdir "./mysql"
-    if [ ! -d $MYSQL_INIT_PATH ]; then
-        mkdir $MYSQL_INIT_PATH
-    fi
+if [ ! -f $ROOT_PATH/SQL/book.sql ];then
+    echo '[ERROR] please download the book.sql in the release'
 fi
-
-echo '[INFO] Copy initial sql'
-cp $ROOT_PATH/SQL/*.sql $MYSQL_INIT_PATH/
 
 echo '[INFO] Starting Containers...'
 docker-compose up -d
@@ -45,33 +37,19 @@ docker exec master cp -r ./apache-tomcat-8.5.78 /usr/
 docker exec master rm -rf ./apache-tomcat-8.5.78
 docker exec master sed -i 's/Connector port="8080"/Connector port="8888"/' /usr/apache-tomcat-8.5.78/conf/server.xml
 ##
-###
-####!!!
-####### 这里是存放的主程序jar包
-#docker exec master cp /usr/webapps/book-rec.jar /usr/apache-tomcat-8.5.78/webapps/
+docker exec master cp /usr/webapps/book-rec.jar /usr/apache-tomcat-8.5.78/webapps/
 echo '[INFO] Start-up Tomcat'
 docker exec master /usr/apache-tomcat-8.5.78/bin/startup.sh
 
 echo '[INFO] Loading SQL Data into MySQL...'
-if [ ! -f ./bookData.sql ]; then
-    echo '[INFO] Start download the full "book.sql" through Curl...'
-    curl http://www2.informatik.uni-freiburg.de/~cziegler/BX/BX-SQL-Dump.zip > sql.zip
-    unzip -x sql.zip -d tmp
-    echo '[INFO] preSQL...'
-    python $ROOT_PATH/scripts/preSQL.py
-    # cp ./tmp/book.sql $MYSQL_INIT_PATH/book.sql
-    rm -rf ./tmp
-    rm -f ./sql.zip
-fi
-docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ./bookData.sql
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/book.sql
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/user.sql
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/recommend.sql
 echo '[INFO] SQL Data Loaded'
-rm -f ./bookData.sql
 
 echo '[INFO] Submitting Rating CSV File to HDFS...'
-tar -xvf $ROOT_PATH/CSV/Ratings.tar.gz -C $ROOT_PATH/CSV/
-rm -f $ROOT_PATH/CSV/Ratings.tar.gz
 cp $ROOT_PATH/CSV/Ratings.csv ./input_files/
-docker exec namenode hdfs dfs -mkdir /input
+#docker exec namenode hdfs dfs -mkdir /input
 docker exec namenode hdfs dfs -put /input_files/Ratings.csv /input
 echo '[INFO] File Submitted'
 

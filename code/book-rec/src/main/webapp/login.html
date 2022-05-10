@@ -34,8 +34,9 @@
 
 <!--scripts-->
 <script src="js/vue.js"></script>
-<script src="js/axios-0.18.0.js"></script>
+<script src="js/axios.min.js"></script>
 <script>
+    axios.defaults.withCredentials=true;
     new Vue({
         el: "#app",
         data() {
@@ -48,7 +49,7 @@
         },
         mounted() {
             var _this = this;
-            var data = localStorage.getItem('isValid');
+            var data = sessionStorage.getItem('isValid');
             if (data != null && data == '0') {
                 _this.is_valid = 0;
             }
@@ -62,7 +63,7 @@
                 axios({
                     method: "get",
                     /*FLAG 注意修改为8888*/
-                    url: "http://localhost:8080/book-rec/checkUserServlet?name=" + _this.username
+                    url: "http://localhost:8888/book-rec/checkUserServlet?name=" + _this.username
                 }).then(function (resp) {
                     if (resp.data != "exit") {
                         _this.is_exit = 0;
@@ -77,17 +78,16 @@
                 axios({
                     method: "post",
                     /*FLAG*/
-                    url: "http://localhost:8080/book-rec/checkUserValidServlet",
+                    url: "http://localhost:8888/book-rec/checkUserValidServlet",
                     data: _this.userInfo
                 }).then(function (resp) {
                     if (resp.data != "isValid") {
-                        localStorage.setItem('isValid', '0');
-                        localStorage.removeItem('userName');
+                        sessionStorage.setItem('isValid', '0');
+                        sessionStorage.removeItem('userName');
                     } else {
-                        localStorage.setItem('isValid', '1');
-                        localStorage.setItem('userName', _this.username);
+                        sessionStorage.setItem('isValid', '1');
+                        sessionStorage.setItem('userName', _this.username);
                     }
-
                 })
             }
         }

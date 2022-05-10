@@ -18,6 +18,7 @@ public class CheckUserServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String username = request.getParameter("name");
         User selectUser = service.selectByName(username);
+
         if (selectUser != null) {
             response.getWriter().write("exit");
         }

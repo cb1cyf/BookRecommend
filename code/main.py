@@ -265,6 +265,7 @@ def Recommend(userId, flag):
     for row in resRowList:
         res.append([row['bookId'], row['prediction']])
     print('[INFO] {} recommendation by ALS for userId={}'.format(len(res), userId))
+    InsertRecommend(userId, res)
     spark.stop()
     return res
 
