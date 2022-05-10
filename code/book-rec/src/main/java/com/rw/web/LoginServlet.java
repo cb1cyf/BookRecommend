@@ -22,11 +22,8 @@ public class LoginServlet extends HttpServlet {
         if (user != null) {
             // 重定向
             response.sendRedirect(contextPath + "/main.html");
-//            转发
-//            request.getRequestDispatcher("/main.html").forward(request, response);
         } else {
             response.sendRedirect(contextPath + "/login.html");
-//            request.getRequestDispatcher("/login.html").forward(request, response);
         }
     }
 

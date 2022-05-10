@@ -18,7 +18,7 @@ public class CheckUserValidServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         BufferedReader br = request.getReader();
-        String params = br.readLine();//json字符串
+        String params = br.readLine(); //json字符串
 
         User user = JSON.parseObject(params, User.class);
 

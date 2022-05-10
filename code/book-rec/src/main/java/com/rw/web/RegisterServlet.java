@@ -21,7 +21,6 @@ public class RegisterServlet extends HttpServlet {
 
         boolean regStatus = service.register(user);
         if (regStatus) {
-//            response.getWriter().write("success");
             request.getRequestDispatcher("/login.html").forward(request, response);
         } else {
             request.getRequestDispatcher("/register.html").forward(request, response);
