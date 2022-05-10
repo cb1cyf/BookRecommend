@@ -37,7 +37,7 @@ docker exec master cp -r ./apache-tomcat-8.5.78 /usr/
 docker exec master rm -rf ./apache-tomcat-8.5.78
 docker exec master sed -i 's/Connector port="8080"/Connector port="8888"/' /usr/apache-tomcat-8.5.78/conf/server.xml
 ##
-docker exec master cp /usr/webapps/book-rec.jar /usr/apache-tomcat-8.5.78/webapps/
+docker exec master cp /usr/webapps/book-rec.war /usr/apache-tomcat-8.5.78/webapps/
 echo '[INFO] Start-up Tomcat'
 docker exec master /usr/apache-tomcat-8.5.78/bin/startup.sh
 
