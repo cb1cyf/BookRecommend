@@ -49,7 +49,7 @@ echo '[INFO] SQL Data Loaded'
 
 echo '[INFO] Submitting Rating CSV File to HDFS...'
 cp $ROOT_PATH/CSV/Ratings.csv ./input_files/
-#docker exec namenode hdfs dfs -mkdir /input
+docker exec namenode hdfs dfs -mkdir /input
 docker exec namenode hdfs dfs -put /input_files/Ratings.csv /input
 echo '[INFO] File Submitted'
 
