@@ -1,0 +1,61 @@
+#!/bin/bash
+set -e
+
+# root is required for docker-compose
+if [ $UID -ne 0 ];then
+    echo '[ERROR] Please Run as Root'
+    exit 1
+fi
+
+# Path variables
+ROOT_PATH="../"
+if [ ! -f $ROOT_PATH/SQL/book.sql ];then
+    echo '[ERROR] please download the book.sql in the release'
+fi
+
+echo '[INFO] Starting Containers...'
+docker-compose up -d
+echo '[INFO] Containers Started'
+
+# NumPy is required for PySpark ML; PyMySQL is used to execute delete clause
+echo '[INFO] Installing NumPy & PyMySQL on Spark Master...'
+docker exec master apt-get update
+# Optional:
+# docker exec master apt-get upgrade -y
+docker exec master apt-get install gcc -y
+docker exec master apt-get install python3-dev -y
+docker exec master pip install numpy
+docker exec master pip install PyMySQL==0.9.3
+echo '[INFO] NumPy & PyMySQL Installed'
+
+echo '[INFO] Install tomcat@8 on Spark Master...'
+docker exec master curl -O -k https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.tar.gz
+docker exec master chmod a+x ./apache-tomcat-8.5.78.tar.gz
+docker exec master tar -xzvf ./apache-tomcat-8.5.78.tar.gz
+docker exec master rm -f ./apache-tomcat-8.5.78.tar.gz
+docker exec master cp -r ./apache-tomcat-8.5.78 /usr/
+docker exec master rm -rf ./apache-tomcat-8.5.78
+docker exec master sed -i 's/Connector port="8080"/Connector port="8888"/' /usr/apache-tomcat-8.5.78/conf/server.xml
+##
+docker exec master cp /usr/webapps/book-rec.war /usr/apache-tomcat-8.5.78/webapps/
+echo '[INFO] Start-up Tomcat'
+docker exec master /usr/apache-tomcat-8.5.78/bin/startup.sh
+
+echo '[INFO] Loading SQL Data into MySQL...'
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/book.sql
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/user.sql
+docker exec -i mysql sh -c 'exec mysql -uroot -p12345678 recommend' < ../SQL/recommend.sql
+echo '[INFO] SQL Data Loaded'
+
+echo '[INFO] Submitting Rating CSV File to HDFS...'
+cp $ROOT_PATH/CSV/Ratings.csv ./input_files/
+docker exec namenode hdfs dfs -mkdir /input
+docker exec namenode hdfs dfs -put /input_files/Ratings.csv /input
+echo '[INFO] File Submitted'
+
+echo '[INFO] Copying Code & Driver to Spark Master...'
+cp $ROOT_PATH/code/main.py ./submit/
+cp $ROOT_PATH/resources/mysql-connector-java-5.1.40.tar.gz ./submit/
+docker exec master tar -zxf /usr/submit/mysql-connector-java-5.1.40.tar.gz -C /usr/spark-2.3.0/jars/
+
+echo '[INFO] Done'

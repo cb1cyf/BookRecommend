@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+    <link href="css/login.css" rel="stylesheet">
+</head>
+
+<body>
+<div id="app">
+    <div id="sys_title">
+        <h1>书籍推荐系统</h1>
+    </div>
+    <div id="loginDiv" style="height: 350px">
+        <form action="/book-rec/loginServlet" method="post" id="form">
+            <h1 id="loginMsg">LOGIN IN</h1>
+            <div class="err_msg" id="errorMsg_is_user_exit" v-show="is_exit==0">用户不存在</div>
+            <div class="err_msg" id="errorMsg_is_user_valid" v-show="is_valid==0">用户名或密码错误，请重新登录</div>
+            <p>Username:<input id="username" name="username" type="text" v-model="username"
+                               v-on:blur="check_user_is_exit()"></p>
+            <p>Password:<input id="password" name="password" type="password" v-model="userInfo.password"
+                               v-on:blur="check_user_is_valid()"></p>
+            <div id="subDiv">
+                <input type="submit" class="button" value="login">
+                <input type="reset" class="button" value="reset">&nbsp;
+                <a href="register.html" id="reg_btn">Go to register</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!--var dataSession=sessionStorage.getItem(name);//获取指定键名数据-->
+
+<!--scripts-->
+<script src="js/vue.js"></script>
+<script src="js/axios.min.js"></script>
+<script>
+    axios.defaults.withCredentials=true;
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                is_exit: 1,
+                username: "",
+                is_valid: 1,
+                userInfo: {}
+            }
+        },
+        mounted() {
+            var _this = this;
+            var data = sessionStorage.getItem('isValid');
+            if (data != null && data == '0') {
+                _this.is_valid = 0;
+            }
+            if (data != null && data == '1') {
+                _this.is_valid = 1;
+            }
+        },
+        methods: {
+            check_user_is_exit() {
+                var _this = this;
+                axios({
+                    method: "get",
+                    /*FLAG 注意修改为8888*/
+                    url: "http://localhost:8888/book-rec/checkUserServlet?name=" + _this.username
+                }).then(function (resp) {
+                    if (resp.data != "exit") {
+                        _this.is_exit = 0;
+                    } else {
+                        _this.is_exit = 1;
+                    }
+                })
+            },
+            check_user_is_valid() {
+                var _this = this;
+                _this.userInfo.userName = _this.username;
+                axios({
+                    method: "post",
+                    /*FLAG*/
+                    url: "http://localhost:8888/book-rec/checkUserValidServlet",
+                    data: _this.userInfo
+                }).then(function (resp) {
+                    if (resp.data != "isValid") {
+                        sessionStorage.setItem('isValid', '0');
+                        sessionStorage.removeItem('userName');
+                    } else {
+                        sessionStorage.setItem('isValid', '1');
+                        sessionStorage.setItem('userName', _this.username);
+                    }
+                })
+            }
+        }
+    });
+
+</script>
+</body>
+</html>

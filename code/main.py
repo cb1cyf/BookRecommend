@@ -261,12 +261,34 @@ def Recommend(userId, flag):
         res.append((row['bookId'], row['prediction']))
     resDF.foreach(f)
     """
-    res = []
-    for row in resRowList:
-        res.append([row['bookId'], row['prediction']])
-    print('[INFO] {} recommendation by ALS for userId={}'.format(len(res), userId))
+    #res = []
+    #for row in resRowList:
+    #    res.append([row['bookId'], row['prediction']])
+    print('[INFO] {} recommendation by ALS for userId={}'.format(len(resRowList), userId))
+
+    recommendDF = spark.read.jdbc('jdbc:mysql://mysql:3306/recommend', 'recommend', properties=prop)
+    recommendDF.createOrReplaceTempView('recommend')
+    sql = 'select * from recommend where userId={}'.format(userId)
+    sqlRes = spark.sql(sql)
+    if sqlRes.count():
+        deleteSQL = 'delete from recommend where userId={}'.format(userId)
+        Delete(deleteSQL)
+        print('[INFO] Delete old recommendation for userId={}'.format(userId))
+    #ratingList = parser(ratingList)
+    #inputData = ['{} {} {}'.format(userId, term[0], term[1]) for term in ratingList]
+    inputData = ['{} {} {}'.format(userId, term['bookId'], term['prediction']) for term in resRowList]
+    inputRDD = spark.sparkContext.parallelize(inputData).map(lambda line: line.split(' '))
+    schema = StructType([
+        StructField('userId', IntegerType(), True),
+        StructField('bookId', IntegerType(), True),
+        StructField('rating', FloatType(), True)
+    ])
+    rowRDD = inputRDD.map(lambda p: Row(int(p[0]), int(p[1]), float(p[2])))
+    rowDF = spark.createDataFrame(rowRDD, schema)
+    rowDF.write.jdbc('jdbc:mysql://mysql:3306/recommend', 'recommend', 'append', prop)
+    print('[INFO] Insert {} recommendation for userId={}'.format(len(resRowList), userId))
+
     spark.stop()
-    return res
 
 
 """

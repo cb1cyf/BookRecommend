@@ -1,0 +1,50 @@
+html {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background: cadetblue;
+    background-size: 100% 100%;
+    -moz-background-size: 100% 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    /*width: 37%;*/
+}
+
+
+.compose-intro {
+    display: flex;
+    flex-direction: row;
+}
+
+.navi {
+    margin-top: 10px;
+}
+
+.button {
+    border-color: cornsilk;
+    /*background-color: rgba(100, 149, 237, .7);*/
+    background-color: #00688B;
+    color: aliceblue;
+    border-style: hidden;
+    border-radius: 5px;
+    width: 100px;
+    height: 31px;
+    font-size: 16px;
+}
+
+#welcome-content {
+    text-align: center;
+}
+
+#intro {
+    text-align: center;
+    font-size: 14pt;
+}

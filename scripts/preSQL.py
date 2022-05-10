@@ -1,8 +1,9 @@
 import re
 # ISO-8859-1 = latin1
-ori_path = './BX-SQL-Dump/BX-Books.sql'
-path = './proj/SQL/book.sql'
+ori_path = '../bin/tmp/BX-Books.sql'
+path = '../bin/bookData.sql'
 id = 1
+print("processing")
 with open(path, 'a', encoding='ISO-8859-1') as f:
     ori_f = open(ori_path, 'r', encoding='ISO-8859-1')
     #header = ori_f.readline()
