@@ -10,5 +10,5 @@ Access address: http://localhost:8888/book-rec/
 The full SQL file `book.sql` can be found in the release. Please download it and copy it to `./SQL/book.sql` before starting service.
 ## Stop Service
 ```bash
-docker-compose stop -f ./bin/docker-compose.yml
+docker-compose -f ./bin/docker-compose.yml stop
 ```
